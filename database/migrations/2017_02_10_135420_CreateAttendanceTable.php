@@ -18,6 +18,7 @@ class CreateAttendanceTable extends Migration
             $table->date('date');
             $table->time('time');
             $table->string('staff_id');
+            $table->char('late');    
             $table->timestamps();
             
             $table->foreign('staff_id')->references('staff_id')->on('users');

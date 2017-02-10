@@ -17,15 +17,17 @@ class HomeController extends Controller
 		$users = new User;
 
 		//get record with id 1 from db
-		$data = $users->find(80);
-				
-		//populate db from csv file if there's no data in the db
-		if (empty($data)) {
+		$userData = $users->find(74);
+		$attendanceData = $attendance->find(80);
 
-			$storage_path = storage_path();
-	    	$file = $storage_path . '/attendance.csv';
+		$storage_path = storage_path();
+    	$file = $storage_path . '/attendance.csv';
 
-	    	$reader = Excel::load($file);
+    	$reader = Excel::load($file);
+
+		//populate users table in db from csv file if there's no user data present
+		if (empty($userData)) {
+
 	    	$result = $reader->get(['staff_id', 'first_name', 'last_name', 'email'])->toArray();
 
     		for ($i=0; $i < count($result); $i++) { 
@@ -36,7 +38,7 @@ class HomeController extends Controller
     			$email = $result[$i]['email'];
 
     			// Check if the staff_id exists in db
-    			$staffStatus = $user->where('staff_id', $staffId)->first();
+    			$staffStatus = $users->where('staff_id', $staffId)->first();
     		    			    		
     			if (empty($staffStatus)) {
 
@@ -50,8 +52,25 @@ class HomeController extends Controller
 
     			}
     		}
-    		echo "End of for";
+		}
 
+		//populate attendance table in db from csv file if there's no user data present
+		 if (empty($attendanceData)) {
+			$result = $reader->get(['date', 'time', 'staff_id']);
+		
+			for ($i=0; $i < count($result); $i++) { 
+
+				$dayData = new Attendance;
+				
+				$date = $result[$i]['date'];
+				$staffId = $result[$i]['staff_id'];
+				$time = $result[$i]['time'];
+
+				//check if teacher's arrival time is above 8am
+				$arrivalTime = explode(':', $time);
+				echo $dayData->late = $arrivalTime[0] > 8 ? 'Y' : 'N';
+				die;
+			}
 		}
 	}
     public function index()
