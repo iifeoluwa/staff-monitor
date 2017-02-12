@@ -132,7 +132,7 @@ class HomeController extends Controller
 				$attendanceData[$user->id]['prompt'][$value] = $this->getPromptness($user->staff_id, $month);    			
     		}
     	}
-    	
+
     	$data['attendance'] = $attendanceData;
     	$data['months'] = $months;
     	$data['users'] = $users;
@@ -153,30 +153,33 @@ class HomeController extends Controller
 
     	$staffData = [];
 
-    	foreach ($attendanceData as $value) {
+    	foreach ($attendanceData as $key => $value) {
 
     		//Parse date to better format
     		$year = Carbon::parse($value->date)->format('Y');
     		$month = Carbon::parse($value->date)->format('F');
-
+    		$monthNo = Carbon::parse($value->date)->month;
+    		
     		//Parse time to better format
     		$time = Carbon::parse($value->time);
     		$time->format('h:i:s A'); 
 
    			$dateMarker = $month . ' ' . $year;
    			
-   			if (empty($staffData[$year]['marker'])) {
-	    		$staffData[$year]['marker'][] = $dateMarker;
-	       	}
-	     	
-   			$staffData[$year][] =	[
+   			if (!array_key_exists($dateMarker, $staffData)) {
+   				$staffData[$dateMarker] = [];
+   			}elseif (array_key_exists($dateMarker, $staffData)) {
+   				$staffData[$dateMarker][] = [
 					   			'time' => $time,
 					   			'date' => $value->date,
 					   			'month' => $month					   		
-					   		]; 
-
-	    	}   
-    	$data = [];
+					   		];
+				$staffData[$dateMarker]['late'] = $this->getLateness($staffId, $monthNo);
+				$staffData[$dateMarker]['prompt'] = $this->getPromptness($staffId, $monthNo);
+   			}
+   			
+	    }
+    	 dd($staffData);
     	$data['staffData'] = $staffData;
     	$data['name'] = $staffName[0];
     	

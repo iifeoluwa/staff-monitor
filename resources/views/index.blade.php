@@ -31,7 +31,7 @@
         	@foreach($users as $user)
         		<tr>
         			<td>{{$user->id}}</td>
-        			<td><a href="/{{$user->id}}">{{$user->name}}</a></td>
+        			<td><a href="/user/{{$user->id}}">{{$user->name}}</a></td>
         			<td>{{$user->email}}</td>
         			@foreach($attendance as $key => $value)
   
