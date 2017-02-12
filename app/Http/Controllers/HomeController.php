@@ -128,14 +128,12 @@ class HomeController extends Controller
 
     			$month = $key + 1;
 
-    			if (empty($attendanceData) || count($attendanceData[$user->id]['late'][$value] <= 12) ) {
-
-					$attendanceData[$user->id]['late'][$value] = $this->getLateness($user->staff_id, $month);
-					$attendanceData[$user->id]['prompt'][$value] = $this->getPromptness($user->staff_id, $month);
-					
-    			}
+				$attendanceData[$user->id]['late'][$value] = $this->getLateness($user->staff_id, $month);
+				$attendanceData[$user->id]['prompt'][$value] = $this->getPromptness($user->staff_id, $month);    			
     		}
     	}
+    	
+    	$data['attendance'] = $attendanceData;
     	$data['months'] = $months;
     	$data['users'] = $users;
 
@@ -205,10 +203,16 @@ class HomeController extends Controller
 					$noOfTimesLate++;
 				}
 			}
-			
-			$lateness = floor(($noOfTimesLate / $total) * 100) . '%';
-			
-			return $lateness; 	
+
+			if ($total !== 0) {
+							
+				$lateness = floor(($noOfTimesLate / $total) * 100) . '%';
+				
+				return $lateness; 	
+			}else{
+				return '0%';
+			}
+
     	}
     }
 
@@ -228,10 +232,18 @@ class HomeController extends Controller
 					$noOfTimesLate++;
 				}
 			}
+
+			if ($total !== 0) {
+
+				$promptness = floor(($noOfTimesLate / $total) * 100) . '%';
 			
-			$promptness = floor(($noOfTimesLate / $total) * 100) . '%';
+				return $promptness;
+
+			}else{
+				return '0%';
+			}
 			
-			return $promptness; 	
+			 	
     	}
     }
 }
