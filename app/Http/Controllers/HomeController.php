@@ -117,12 +117,121 @@ class HomeController extends Controller
 	}
     public function index()
     {
-    	// $dt = Carbon::parse('2012-9-5 23:26:11.123789');
-    	// echo $dt->year;
+    	$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    	
+    	$users = DB::table('users')->get();
+    	$attendanceData = [];
 
-    	$user = DB::table('users')->get();
-    	$data['users'] = $user;
+    	foreach ($users as $user) {
+
+    		foreach ($months as $key => $value) {
+
+    			$month = $key + 1;
+
+    			if (empty($attendanceData) || count($attendanceData[$user->id]['late'][$value] <= 12) ) {
+
+					$attendanceData[$user->id]['late'][$value] = $this->getLateness($user->staff_id, $month);
+					$attendanceData[$user->id]['prompt'][$value] = $this->getPromptness($user->staff_id, $month);
+					
+    			}
+    		}
+    	}
+    	$data['months'] = $months;
+    	$data['users'] = $users;
 
        	return view('index', $data);
+    }
+
+
+   /* 	Fetch single user.
+	*	@param $userId {the user's unique staff id}
+    */
+    public function user($userId)
+    {
+    	$staffId = DB::table('users')->where('id', $userId)->pluck('staff_id');
+    	$staffName = DB::table('users')->where('id', $userId)->pluck('name');
+    	
+    	$attendanceData = DB::table('attendance')->where('staff_id', $staffId)->get();
+
+    	$staffData = [];
+
+    	foreach ($attendanceData as $value) {
+
+    		//Parse date to better format
+    		$year = Carbon::parse($value->date)->format('Y');
+    		$month = Carbon::parse($value->date)->format('F');
+
+    		//Parse time to better format
+    		$time = Carbon::parse($value->time);
+    		$time->format('h:i:s A'); 
+
+   			$dateMarker = $month . ' ' . $year;
+   			
+   			if (empty($staffData[$year]['marker'])) {
+	    		$staffData[$year]['marker'][] = $dateMarker;
+	       	}
+	     	
+   			$staffData[$year][] =	[
+					   			'time' => $time,
+					   			'date' => $value->date,
+					   			'month' => $month					   		
+					   		]; 
+
+	    	}   
+    	$data = [];
+    	$data['staffData'] = $staffData;
+    	$data['name'] = $staffName[0];
+    	
+       	return view('user', $data);
+    }
+
+    /* 	Get lateness
+	*	@param $id {the user's unique staff id}
+	*	@param $month {month of the year whose lateness is required}
+    */
+    public function getLateness($id=null, $month = null)
+    {
+    	if (!empty($id) && !empty($month)) {
+			
+			$staff = DB::table('attendance')->where('staff_id', $id)
+											->whereMonth('date', $month)
+											->pluck('late');
+
+			$total = $staff->count();
+			$noOfTimesLate = 0;
+
+			foreach ($staff as $value) {
+				if ($value == 'Y') {
+					$noOfTimesLate++;
+				}
+			}
+			
+			$lateness = floor(($noOfTimesLate / $total) * 100) . '%';
+			
+			return $lateness; 	
+    	}
+    }
+
+    public function getPromptness($id=null, $month = null)
+    {
+    	if (!empty($id) && !empty($month)) {
+			
+			$staff = DB::table('attendance')->where('staff_id', $id)
+											->whereMonth('date', $month)
+											->pluck('late');
+
+			$total = $staff->count();
+			$noOfTimesLate = 0;
+
+			foreach ($staff as $value) {
+				if ($value == 'N') {
+					$noOfTimesLate++;
+				}
+			}
+			
+			$promptness = floor(($noOfTimesLate / $total) * 100) . '%';
+			
+			return $promptness; 	
+    	}
     }
 }
