@@ -13,3 +13,4 @@
 
 Route::get('/', 'HomeController@index');
 Route::get('/user/{userId}', 'HomeController@user');
+Route::get('/home', 'HomeController@home');

@@ -9,31 +9,44 @@
 <body>
 	<div id="hero">
 		<h3>Staff Monitor</h3><br>
+		<a href="/home">Go Home</a>
 	</div>
-	<span><em>Attendance Information</em></span>
-
+	
 	<div id="container">
 		<h4>Staff Name: {{$name}} </h4>
 
 		<div>
-			@foreach($staffData as $data)
-				<div>{{$data['marker'][0]}}</div>
-				<table id="staffData" class="mdl-data-table" cellspacing="0" width="70%">
+		<?php $i = 0; ?>
+			@foreach($staffData as $key => $data)
+				<div><strong>Period: </strong>{{$key}}</div>
+				<div>Percentage Lateness: {{$data['late']}}</div>
+				<div>Percentage Early Arrivals: {{$data['prompt']}}</div>
+				<table id="staffData-{{$i}}" class="mdl-data-table" cellspacing="0" width="20%">
 					<thead>
 			            <tr>
-			                <th>Date</th>
-			                <th>Time</th>
+			                <th>Date</th>			               
+			                <th>Arrival</th>
 			            </tr>
 			        </thead>
 					
+					
 					<tbody>
-						
+					@foreach($data as $key => $staff)
+						@if(is_int($key))
+							<tr>
+								<td>{{ $staff['date']}}</td>
+								<td>{{ $staff['arrival']}}</td>
+							</tr>
+						@endif
+						<?php $i++?>
+					@endforeach
 					</tbody>
-				
+					
 				</table>
+				<hr>
 			@endforeach
 		</div>
-		<hr>
+		
 		
 	</div>
 	
@@ -43,8 +56,8 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-		    $('#staffData').DataTable( {
-		    	"ordering": false,
+		    $('#staffData-0').DataTable( {
+		    	"ordering": true,
 
 		        columnDefs: [
 		            {
@@ -53,6 +66,30 @@
 		            }
 		        ]
 		    } );
+
+		    $('#staffData-1').DataTable( {
+		    	"ordering": true,
+
+		        columnDefs: [
+		            {
+		                targets: [ 0, 1, 2 ],
+		                className: 'mdl-data-table__cell--non-numeric'
+		            }
+		        ]
+		    } );
+
+		    $('#staffData-2').DataTable( {
+		    	"ordering": true,
+
+		        columnDefs: [
+		            {
+		                targets: [ 0, 1, 2 ],
+		                className: 'mdl-data-table__cell--non-numeric'
+		            }
+		        ]
+		    } );
+
+
 		} );
 	</script>
 </body>

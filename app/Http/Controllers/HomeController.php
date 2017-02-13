@@ -146,6 +146,7 @@ class HomeController extends Controller
     */
     public function user($userId)
     {
+
     	$staffId = DB::table('users')->where('id', $userId)->pluck('staff_id');
     	$staffName = DB::table('users')->where('id', $userId)->pluck('name');
     	
@@ -162,28 +163,45 @@ class HomeController extends Controller
     		
     		//Parse time to better format
     		$time = Carbon::parse($value->time);
-    		$time->format('h:i:s A'); 
+    		$time->format('h:i:s A');
+
+    		$arrival = $value->late == 'Y' ? 'Late' : 'Early';
 
    			$dateMarker = $month . ' ' . $year;
-   			
+
    			if (!array_key_exists($dateMarker, $staffData)) {
+
    				$staffData[$dateMarker] = [];
-   			}elseif (array_key_exists($dateMarker, $staffData)) {
-   				$staffData[$dateMarker][] = [
-					   			'time' => $time,
-					   			'date' => $value->date,
-					   			'month' => $month					   		
-					   		];
-				$staffData[$dateMarker]['late'] = $this->getLateness($staffId, $monthNo);
+   				
+   				$staffData[$dateMarker]['late'] = $this->getLateness($staffId, $monthNo);
 				$staffData[$dateMarker]['prompt'] = $this->getPromptness($staffId, $monthNo);
+
+   				$staffData[$dateMarker][$key]['test'] = 'test';
+				$staffData[$dateMarker][$key]['date'] = $value->date;
+				$staffData[$dateMarker][$key]['arrival'] = $arrival;
+
+   			}elseif (array_key_exists($dateMarker, $staffData)) {
+				
+				$staffData[$dateMarker]['late'] = $this->getLateness($staffId, $monthNo);
+				$staffData[$dateMarker]['prompt'] = $this->getPromptness($staffId, $monthNo);						
+
+				$staffData[$dateMarker][$key]['test'] = 'test';
+				$staffData[$dateMarker][$key]['date'] = $value->date;
+				$staffData[$dateMarker][$key]['arrival'] = $arrival;
+			
    			}
    			
 	    }
-    	 dd($staffData);
+	  	// dd($staffData);
     	$data['staffData'] = $staffData;
     	$data['name'] = $staffName[0];
     	
        	return view('user', $data);
+    }
+
+    public function home()
+    {
+    	return redirect('/');
     }
 
     /* 	Get lateness
@@ -219,6 +237,10 @@ class HomeController extends Controller
     	}
     }
 
+   /*	Get promptness
+	*	@param $id {the user's unique staff id}
+	*	@param $month {month of the year whose lateness is required}
+    */
     public function getPromptness($id=null, $month = null)
     {
     	if (!empty($id) && !empty($month)) {
